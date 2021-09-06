@@ -1,0 +1,84 @@
+apiVersion: kops.k8s.io/v1alpha2
+kind: Cluster
+metadata:
+  #labels:
+  name: {{ .clusterName }}.{{ .dns }}
+spec:
+  kubernetesVersion: 1.21.1
+  cloudProvider: aws
+  configBase: s3://{{ .s3Bucket }}
+  iam:
+    allowContainerRegistry: true
+    legacy: false
+  kubelet:
+    anonymousAuth: false
+    authenticationTokenWebhook: true
+    authorizationMode: Webhook 
+  kubernetesApiAccess:
+  - 0.0.0.0/0   
+  ssh_public_key: ~/.ssh/ida_rsa.pub
+  machineType: {{ .machineType }}
+  networkID: {{ .vpcID }}
+  networkCIDR: 172.31.0.0/16	
+  nonMasqueradeCIDR: 172.32.0.0/16
+  subnets:
+  - name: {{.awsRegion}}a
+    type: Public
+    zone: {{.awsRegion}}a
+  - name: {{.awsRegion}}b
+    type: Public
+    zone: {{.awsRegion}}b
+  - name: {{.awsRegion}}c
+    type: Public
+    zone: {{.awsRegion}}c
+  authorization:
+    rbac: {}  
+  etcdClusters:
+  - name: main
+    etcdMembers:
+    - instanceGroup: master-a
+      name: a
+  masterPublicName: api.{{ .clusterName }}.{{ .dns }}
+  sshAccess:
+  - 0.0.0.0/0  
+  topology:
+    dns:
+      type: Public
+    masters: public
+    nodes: public
+
+---
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  labels:
+    kops.k8s.io/cluster: {{ .clusterName }}.{{ .dns }}
+  name: master-a
+spec:
+  machineType: {{ .machineType }}
+  maxSize: 2
+  minSize: 1
+  nodeLabels:
+    kops.k8s.io/instancegroup: master-a
+  role: Master
+  subnets:
+  - {{.awsRegion}}a
+
+---
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  labels:
+    kops.k8s.io/cluster: {{ .clusterName }}.{{ .dns }}
+  name: ig1
+spec:
+  machineType: {{ .machineType }}
+  maxSize: {{ .maxSize }}
+  minSize: {{ .minSize }}
+  nodeLabels:
+    kops.k8s.io/instancegroup: node
+  role: Node
+  subnets:
+  - {{.awsRegion}}a
+  - {{.awsRegion}}b
+  - {{.awsRegion}}c

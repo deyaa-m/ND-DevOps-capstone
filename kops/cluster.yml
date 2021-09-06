@@ -1,0 +1,84 @@
+apiVersion: kops.k8s.io/v1alpha2
+kind: Cluster
+metadata:
+  #labels:
+  name: capstone-cluster.deyaa.online
+spec:
+  kubernetesVersion: 1.21.1
+  cloudProvider: aws
+  configBase: s3://capstone-cluster
+  iam:
+    allowContainerRegistry: true
+    legacy: false
+  kubelet:
+    anonymousAuth: false
+    authenticationTokenWebhook: true
+    authorizationMode: Webhook 
+  kubernetesApiAccess:
+  - 0.0.0.0/0   
+  ssh_public_key: ~/.ssh/ida_rsa.pub
+  machineType: t2.micro
+  networkID: vpc-8c6f17e4
+  networkCIDR: 172.31.0.0/16	
+  nonMasqueradeCIDR: 172.32.0.0/16
+  subnets:
+  - name: eu-west-2a
+    type: Public
+    zone: eu-west-2a
+  - name: eu-west-2b
+    type: Public
+    zone: eu-west-2b
+  - name: eu-west-2c
+    type: Public
+    zone: eu-west-2c
+  authorization:
+    rbac: {}  
+  etcdClusters:
+  - name: main
+    etcdMembers:
+    - instanceGroup: master-a
+      name: a
+  masterPublicName: api.capstone-cluster.deyaa.online
+  sshAccess:
+  - 0.0.0.0/0  
+  topology:
+    dns:
+      type: Public
+    masters: public
+    nodes: public
+
+---
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  labels:
+    kops.k8s.io/cluster: capstone-cluster.deyaa.online
+  name: master-a
+spec:
+  machineType: t2.micro
+  maxSize: 2
+  minSize: 1
+  nodeLabels:
+    kops.k8s.io/instancegroup: master-a
+  role: Master
+  subnets:
+  - eu-west-2a
+
+---
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  labels:
+    kops.k8s.io/cluster: capstone-cluster.deyaa.online
+  name: ig1
+spec:
+  machineType: t2.micro
+  maxSize: 3
+  minSize: 2
+  nodeLabels:
+    kops.k8s.io/instancegroup: node
+  role: Node
+  subnets:
+  - eu-west-2a
+  - eu-west-2b
+  - eu-west-2c
