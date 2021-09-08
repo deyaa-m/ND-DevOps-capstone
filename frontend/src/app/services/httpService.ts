@@ -31,6 +31,7 @@ export class HttpService {
     const response = await fetch(url, {
       headers: {
         'Content-Type': 'application/json; charset=utf-8',
+        'Access-Control-Allow-Origin': '*',
       },
       body: JSON.stringify(data),
       method: 'POST',
@@ -48,6 +49,7 @@ export class HttpService {
     const response = await fetch(url, {
       headers: {
         'Content-Type': 'application/json; charset=utf-8',
+        'Access-Control-Allow-Origin': '*',
       },
       body: JSON.stringify(data),
       method: 'PUT',
@@ -65,6 +67,7 @@ export class HttpService {
     const response = await fetch(url, {
       headers: {
         'Content-Type': 'application/json; charset=utf-8',
+        'Access-Control-Allow-Origin': '*',
       },
       // body: JSON.stringify(data),
       method: 'DELETE',
