@@ -52,7 +52,6 @@ jobs:
       - run:
           name: run lint
           command: |
-#            . ~/.ml/bin/activate
             make lint
 
   dockerize:
