@@ -7,15 +7,15 @@ workflows:
     jobs:
       - build
       - dockerize:
-        requires: [build]
+          requires: [build]
       #- provision:
-      #  requires: [dockerize]
+      #   requires: [dockerize]
       #- update:
-      #  requires: [provision]
+      #   requires: [provision]
       #- validate:
-      #  requires: [update]
+      #   requires: [update]
       #- cleanup:
-      #  requires: [validate]
+      #   requires: [validate]
 
 jobs:
   build:
