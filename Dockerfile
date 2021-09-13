@@ -11,9 +11,9 @@ COPY $PWD /app/
 ## Step 3:
 # Install packages from requirements.txt
 # hadolint ignore=DL3013
-ENV VIRTUAL_ENV=~/.app
-RUN python3.7 -m venv $VIRTUAL_ENV 
-RUN ${VIRTUAL_ENV}/bin/activate
+#ENV VIRTUAL_ENV=~/.app
+#RUN python3.7 -m venv $VIRTUAL_ENV 
+#RUN ${VIRTUAL_ENV}/bin/activate
 RUN make install
 
 ## Step 4:
