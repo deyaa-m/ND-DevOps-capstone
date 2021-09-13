@@ -31,9 +31,9 @@ jobs:
       # Download and cache dependencies
       - restore_cache:
           keys:
-          - v1-dependencies-{{ checksum "requirements.txt" }}
-          # fallback to using the latest cache if no exact match is found
-          - v1-dependencies-
+            - v1-dependencies-{{ checksum "requirements.txt" }}
+            # fallback to using the latest cache if no exact match is found
+            - v1-dependencies-
 
       - run:
           name: install dependencies
@@ -49,26 +49,26 @@ jobs:
           paths:
             - ./venv
           key: v1-dependencies-{{ checksum "requirements.txt" }}
-      
+
       # run lints!
       - run:
           name: run lint
           command: |
             . ~/.ml/bin/activate
             make lint
-    
+
   dockerize:
     environment:
       ecr: 135834287615.dkr.ecr.eu-west-2.amazonaws.com
       version: 1.0
     docker:
       - image: python:3.7.3-stretch
-    
+
     steps:
       - checkout
       - setup_remote_docker:
           version: 19.03.13
           docker_layer_caching: true
-      - run: | 
+      - run: |
           docker build -t ${ecr}/flask:${version} .
           docker push ${ecr}/flask:${version}
