@@ -70,7 +70,7 @@ jobs:
       #    #docker_layer_caching: true
       - run:
           name: install aws
-          command: apt update && apt install awscli -y
+          command: sudo apt update && sudo apt install awscli -y
       - run: |
           docker build -t ${ecr}/flask:${version} .
           aws ecr get-login-password --region eu-west-2 | docker login --username AWS --password-stdin 135834287615.dkr.ecr.eu-west-2.amazonaws.com
