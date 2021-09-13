@@ -8,14 +8,15 @@ workflows:
       - build
       - dockerize:
         requires: [build]
-      - provision:
-        requires: [dockerize]
-      - update:
-        requires: [provision]
-      - validate:
-        requires: [update]
-      - cleanup:
-        requires: [validate]
+      #- provision:
+      #  requires: [dockerize]
+      #- update:
+      #  requires: [provision]
+      #- validate:
+      #  requires: [update]
+      #- cleanup:
+      #  requires: [validate]
+
 jobs:
   build:
     docker:
@@ -57,7 +58,17 @@ jobs:
             make lint
     
   dockerize:
-    machine:
-      image: python:3.7.3-stretch
-      docker_layer_caching: true
-      
+    environment:
+      ecr: 135834287615.dkr.ecr.eu-west-2.amazonaws.com
+      version: 1.0
+    docker:
+      - image: python:3.7.3-stretch
+    
+    steps:
+      - checkout
+      - setup_remote_docker:
+          version: 19.03.13
+          docker_layer_caching: true
+      - run: | 
+          docker build -t ${ecr}/flask:${version} .
+          docker push ${ecr}/flask:${version}
