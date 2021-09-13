@@ -72,6 +72,6 @@ jobs:
           name: install aws
           command: sudo apt update && sudo apt install awscli -y
       - run: |
-          docker build -t ${ecr}/flask:${version} .
           aws ecr get-login-password --region eu-west-2 | docker login --username AWS --password-stdin 135834287615.dkr.ecr.eu-west-2.amazonaws.com
+          docker build -t ${ecr}/flask:${version} .
           docker push ${ecr}/flask:${version}
