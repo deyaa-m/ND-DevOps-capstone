@@ -5,9 +5,9 @@ version: 2.1
 workflows:
   flask:
     jobs:
-      - build
-      - dockerize:
-          requires: [build]
+      #- build
+      - dockerize
+      #    requires: [build]
       #- provision:
       #   requires: [dockerize]
       #- update:
