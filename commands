@@ -1,0 +1,8 @@
+#!/bin/bash
+
+## instaliing circleci local
+curl -fLSs https://raw.githubusercontent.com/CircleCI-Public/circleci-cli/master/install.sh | bash
+
+# uses local docker as minikube
+#eval $(minikube docker-env)
+

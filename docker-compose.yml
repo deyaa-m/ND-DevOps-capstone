@@ -1,31 +1,7 @@
-## Docker compose file testing front and back locally
-version: "3.8"
+version: "3"
 
-services:
-  front:
-    container_name: front
-    image: front:2.2
-    volumes:
-      - ./frontend/nginx-default.conf:/etc/nginx/conf.d/default.conf
-      #- ./frontend:/app
-    environment: 
-      API_URL: back
-    working_dir: /app
-    #entrypoint: ["npm", "start"]
-    ports:
-      - 81:80
-      - 3000:3000
-
-  back:
-    container_name: back
-    image: back:1.6
-    ports:
-      - 3030:3030
-
-  #nginx:
-  #  container_name: nginx
-  #  image: nginx
-  #  volumes:
-  #    - ./nginx-default.conf:/etc/nginx/conf.d/default.conf
-  #  ports: 
-  #    - 80:80
+services: 
+  flask:
+    image: flask:latest #135834287615.dkr.ecr.eu-west-2.amazonaws.com/flask:latest
+    ports: 
+      - 8000:80
