@@ -1,0 +1,11 @@
+## Cluster values
+
+clusterName: capstone-cluster
+dns: deyaa.online
+s3Bucket: capstone-cluster
+awsRegion: eu-west-2
+vpcID: vpc-8c6f17e4
+masterType: t2.medium
+nodeType: t2.micro
+minSize: 2
+maxSize: 3

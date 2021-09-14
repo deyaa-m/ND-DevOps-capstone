@@ -1,0 +1,97 @@
+apiVersion: kops.k8s.io/v1alpha2
+kind: Cluster
+metadata:
+  #labels:
+  name: {{ .clusterName }}.{{ .dns }}
+spec:
+  api:
+    dns: {}
+  authorization:
+    AlwaysAllow: {}
+  kubeDNS:
+    provider: CoreDNS
+  
+  channel: stable  
+  kubernetesVersion: 1.21.1
+  cloudProvider: aws
+  configBase: s3://{{ .s3Bucket }}/${{ .clusterName }}
+  iam:
+    allowContainerRegistry: true
+    legacy: false
+  kubelet:
+    anonymousAuth: false
+  #  authenticationTokenWebhook: true
+  #  authorizationMode: Webhook 
+  kubeAPIServer:
+    enableAggregatorRouting: true
+
+  kubernetesApiAccess:
+  - 0.0.0.0/0   
+  ssh_public_key: ~/.ssh/ida_rsa.pub
+  networkID: {{ .vpcID }}
+  networkCIDR: 172.31.0.0/16
+  networking:
+    weave: {}
+  nonMasqueradeCIDR: 100.64.0.0/10
+  subnets:
+  - name: {{.awsRegion}}a
+    type: Public
+    zone: {{.awsRegion}}a
+    cidr: 172.31.48.0/20
+  - name: {{.awsRegion}}b
+    type: Public
+    zone: {{.awsRegion}}b
+    cidr: 172.31.64.0/20
+  - name: {{.awsRegion}}c
+    type: Public
+    zone: {{.awsRegion}}c
+    cidr: 172.31.80.0/20
+  etcdClusters:
+  - name: main
+    etcdMembers:
+    - instanceGroup: master-a
+      name: a
+  masterPublicName: api.{{ .clusterName }}.{{ .dns }}
+  sshAccess:
+  - 0.0.0.0/0  
+  topology:
+    dns:
+      type: Public
+    masters: public
+    nodes: public
+
+---
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  labels:
+    kops.k8s.io/cluster: {{ .clusterName }}.{{ .dns }}
+  name: master-a
+spec:
+  machineType: {{ .masterType }}
+  maxSize: 2
+  minSize: 1
+  nodeLabels:
+    kops.k8s.io/instancegroup: master-a
+  role: Master
+  subnets:
+  - {{.awsRegion}}a
+
+---
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  labels:
+    kops.k8s.io/cluster: {{ .clusterName }}.{{ .dns }}
+  name: ig1
+spec:
+  machineType: {{ .nodeType }}
+  maxSize: {{ .maxSize }}
+  minSize: {{ .minSize }}
+  nodeLabels:
+    kops.k8s.io/instancegroup: node
+  role: Node
+  subnets:
+  - {{.awsRegion}}a
+  - {{.awsRegion}}b
+  - {{.awsRegion}}c
