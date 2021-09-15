@@ -25,8 +25,8 @@ workflows:
       #    requires: [build]
       - provision
       #   requires: [dockerize]
-      - update
-      #   requires: [dockerize]
+      - update:
+         requires: [provision]
       #- validate:
       #   requires: [update]
       #- cleanup:
@@ -100,6 +100,14 @@ jobs:
       #      kops version
       #      kops --state $kss export kubecfg $cn --admin
       - run:
+          name: wait for cluster to be healthy
+          command: aws cloudformation wait stack-create-complete --stack-name eks
+
+      - run:
+          name: configure kubectl context
+          command: aws eks --region eu-west-2 update-kubeconfig --name $cn
+
+      - run:
           name: install kubectl
           command: |
             curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.20.9/bin/linux/amd64/kubectl
@@ -107,13 +115,6 @@ jobs:
             mv ./kubectl /usr/bin/kubectl
             #export KUBECONFIG=~/.kube/config
             kubectl version 
-      - run:
-          name: wait for cluster to be healthy
-          command: aws cloudformation wait stack-create-complete --stack-name eks
-
-      - run:
-          name: configure kubectl context
-          command: aws eks --region eu-west-2 update-kubeconfig --name $cn
 
       - run:
           name: create new Deployment
