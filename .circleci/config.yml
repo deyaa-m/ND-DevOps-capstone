@@ -3,6 +3,9 @@
 #
 version: 2.1
 
+orbs:
+  aws-cli: circleci/aws-cli@2.0.3
+
 commands:
   aws-alpine:
     description: install aws-cli on alpine distros
@@ -82,13 +85,13 @@ jobs:
 
   update:
     docker:
-      - image: python:3.7-alpine3.11
+      - image: python:3.7 #-alpine3.11
     environment:
       #kss: s3://capstone-cluster
       cn: capstone-cluster
     steps:
       - checkout
-      - aws-alpine
+      - aws-cli/install
       #- run:
       #    name: install kops
       #    command: |
