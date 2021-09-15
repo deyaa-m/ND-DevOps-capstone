@@ -85,13 +85,13 @@ jobs:
 
   update:
     docker:
-      - image: python:3.7 #-alpine3.11
+      - image: python:3.7-alpine3.11
     environment:
       #kss: s3://capstone-cluster
       cn: capstone-cluster
     steps:
       - checkout
-      - aws-cli/install
+      - aws-alpine
       #- run:
       #    name: install kops
       #    command: |
@@ -120,7 +120,7 @@ jobs:
       - run:
           name: Create/Update Deployment
           command: |
-            export deploy=$(kubectl get deploy -oyaml)
+            export deploy="$(kubectl get deploy -oyaml)"
             if [[ "${deploy[@]}" =~ "flask-app" ]]
             then
               kubectl set image deployment/flask-app flask=135834287615.dkr.ecr.eu-west-2.amazonaws.com/flask:${CIRCLE_WORKFLOW_ID:0:6} --record
