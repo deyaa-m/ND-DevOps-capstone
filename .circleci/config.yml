@@ -74,8 +74,8 @@ jobs:
     docker:
       - image: python:3.7-alpine3.11
     steps:
-      - aws-alpine
       - checkout
+      - aws-alpine
       - run: 
           name: create cluster
           command: aws cloudformation deploy --template-file eks/cluster.yaml \
