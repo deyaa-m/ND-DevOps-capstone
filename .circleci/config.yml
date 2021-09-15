@@ -20,13 +20,13 @@ commands:
 workflows:
   flask:
     jobs:
-      #- build
-      #- dockerize:
-      #    requires: [build]
-      #- provision:
-      #   requires: [dockerize]
-      - update
-      #   requires: [provision]
+      - build
+      - dockerize:
+          requires: [build]
+      - provision:
+         requires: [dockerize]
+      - update:
+         requires: [provision]
 
 jobs:
   build:
@@ -115,9 +115,16 @@ jobs:
             kubectl version 
 
       - run:
-          name: create new Deployment
-          command: kubectl apply -f eks/cluster.yaml
-          #kubectl set image deployment/flask-app flask=135834287615.dkr.ecr.eu-west-2.amazonaws.com/flask:1e14df --record #${CIRCLE_WORKFLOW_ID:0:6} --record
+          name: Create/Update Deployment
+          command: |
+            export deploy=$(kubectl get deploy | grep flask)
+            if [[ "${deploy[@]}" =~ "flask-app" ]]
+            then
+              kubectl set image deployment/flask-app flask=135834287615.dkr.ecr.eu-west-2.amazonaws.com/flask:1e14df --record #${CIRCLE_WORKFLOW_ID:0:6} --record
+            else
+              kubectl apply -f flask-k8s.yaml
+              kubectl set image deployment/flask-app flask=135834287615.dkr.ecr.eu-west-2.amazonaws.com/flask:1e14df --record #${CIRCLE_WORKFLOW_ID:0:6} --record
+            fi
 
       - run:
           name: get service LoadBalancer
