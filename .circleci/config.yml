@@ -86,7 +86,7 @@ jobs:
           name: configure kubectl
           command: |
             kops --state $kss export kubecfg $cn --admin 
-            export KUBECONFIG=~/.kube/config
+            #export KUBECONFIG=~/.kube/config
       - run:
           name: create new Deployment
-          command: kubectl apply -f deploy-flask.yml
+          command: kubectl apply -f flask-k8s.yml
