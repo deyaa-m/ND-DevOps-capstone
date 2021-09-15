@@ -20,17 +20,13 @@ commands:
 workflows:
   flask:
     jobs:
-      #- build
-      #- dockerize:
-      #    requires: [build]
-      - provision
-      #   requires: [dockerize]
+      - build
+      - dockerize:
+          requires: [build]
+      - provision:
+         requires: [dockerize]
       - update:
          requires: [provision]
-      #- validate:
-      #   requires: [update]
-      #- cleanup:
-      #   requires: [validate]
 
 jobs:
   build:
@@ -119,7 +115,7 @@ jobs:
 
       - run:
           name: create new Deployment
-          command: kubectl --record set image deployment/flask-app flask=135834287615.dkr.ecr.eu-west-2.amazonaws.com/flask:daa0b8  #${CIRCLE_WORKFLOW_ID:0:6}
+          command: kubectl --record set image deployment/flask-app flask=135834287615.dkr.ecr.eu-west-2.amazonaws.com/flask:${CIRCLE_WORKFLOW_ID:0:6}
 
       - run:
           name: get service LoadBalancer
