@@ -78,6 +78,7 @@ jobs:
             aws cloudformation deploy --template-file eks/cluster.yaml \
              --stack-name eks --tags version=${CIRCLE_WORKFLOW_ID} \
              --capabilities CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND
+          no_output_timeout: 12m
 
   update:
     docker:
