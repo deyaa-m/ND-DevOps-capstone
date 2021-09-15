@@ -77,18 +77,15 @@ jobs:
             chmod +x kops-linux-amd64
             mv kops-linux-amd64 /usr/bin/kops
             kops version
+            kops --state $kss export kubecfg $cn --admin
       - run:
           name: install kubectl
           command: |
             curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.20.9/bin/linux/amd64/kubectl
             chmod +x ./kubectl
             mv ./kubectl /usr/bin/kubectl
-            kubectl version
-      - run:
-          name: configure kubectl
-          command: |
-            kops --state $kss export kubecfg $cn --admin 
             #export KUBECONFIG=~/.kube/config
+            kubectl version 
       - run:
           name: create new Deployment
           command: kubectl set image deployment/flask-app flask=135834287615.dkr.ecr.eu-west-2.amazonaws.com/flask:${CIRCLE_WORKFLOW_ID:0:6}
