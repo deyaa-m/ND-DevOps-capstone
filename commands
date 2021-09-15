@@ -6,3 +6,4 @@ curl -fLSs https://raw.githubusercontent.com/CircleCI-Public/circleci-cli/master
 # uses local docker as minikube
 #eval $(minikube docker-env)
 
+kops create cluster --name $cn --cloud aws --zones eu-west-2a,eu-west-2b,eu-west-2c --dns-zone deyaa.online --master-zones eu-west-2a,eu-west-2b,eu-west-2c --node-count 2 --node-size t2.micro --master-size t2.micro  --state $kss --yes
