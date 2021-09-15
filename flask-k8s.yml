@@ -16,8 +16,8 @@ spec:
     spec:
       containers:
       - name: flask
-        image: 135834287615.dkr.ecr.eu-west-2.amazonaws.com/flask:latest
-        imagePullPolicy: Never
+        image: 135834287615.dkr.ecr.eu-west-2.amazonaws.com/flask:1
+        imagePullPolicy: Always
         ports:
         - containerPort: 80
 
@@ -28,7 +28,7 @@ kind: Service
 metadata:
   name: flask-service
 spec:
-  #type: NodePort
+  type: LoadBalancer
   selector:
     app: flask
   ports:
