@@ -1,0 +1,85 @@
+
+Parameters:
+  #ID:
+  #  Type: String
+  CN:
+    Type: String
+    Default: capstone-cluster
+    
+
+Resources:
+  cluster:
+    Type: AWS::EKS::Cluster
+    Properties: 
+      Name: !Ref CN
+      ResourcesVpcConfig: 
+        SubnetIds:
+          - subnet-436b292a
+          - subnet-e186089b
+          - subnet-8c508dc0
+      RoleArn: arn:aws:iam::135834287615:role/EKS-Role
+
+  NGRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: EKSNodeRole
+      Description: Iam Role Allowing EC2 instance to use S3 bucket
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - ec2.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy
+        - arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly
+      #Policies:
+      #  - PolicyName: eksNode
+      #    PolicyDocument: 
+      #      Version: 2012-10-17
+      #      Statement:
+      #        Resource: "*"
+      #        Effect: "Allow"
+      #        Action:
+      #          - "ec2:DescribeInstances"
+      #          - "ec2:DescribeRouteTables"
+      #          - "ec2:DescribeSecurityGroups"
+      #          - "ec2:DescribeSubnets"
+      #          - "ec2:DescribeVolumes"
+      #          - "ec2:DescribeVolumesModifications"
+      #          - "ec2:DescribeVpcs"
+      #          - "eks:DescribeCluster"
+      #          - "ecr:GetAuthorizationToken"
+      #          - "ecr:BatchCheckLayerAvailability"
+      #          - "ecr:GetDownloadUrlForLayer"
+      #          - "ecr:GetRepositoryPolicy"
+      #          - "ecr:DescribeRepositories"
+      #          - "ecr:ListImages"
+      #          - "ecr:DescribeImages"
+      #          - "ecr:BatchGetImage"
+      #          - "ecr:GetLifecyclePolicy"
+      #          - "ecr:GetLifecyclePolicyPreview"
+      #          - "ecr:ListTagsForResource"
+      #          - "ecr:DescribeImageScanFindings"  
+              
+  NG1:
+    Type: AWS::EKS::Nodegroup
+    DependsOn:
+      - cluster
+      - NGRole
+    Properties: 
+      ClusterName: !Ref CN
+      InstanceTypes: 
+        - t2.micro
+      NodegroupName: NG1
+      NodeRole: !GetAtt NGRole.Arn
+      Subnets: 
+        - subnet-436b292a
+        - subnet-e186089b
+        - subnet-8c508dc0
+      Labels:  
+        kubernetes.io/cluster/capstone-cluster: Owned
+      

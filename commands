@@ -7,3 +7,8 @@ curl -fLSs https://raw.githubusercontent.com/CircleCI-Public/circleci-cli/master
 #eval $(minikube docker-env)
 
 kops create cluster --name $cn --cloud aws --zones eu-west-2a,eu-west-2b,eu-west-2c --dns-zone deyaa.online --master-zones eu-west-2a,eu-west-2b,eu-west-2c --node-count 2 --node-size t2.micro --master-size t2.micro  --state $kss --yes
+
+
+kubectl get svc | grep eu-west | cut -d " " -f 10
+
+aws cloudformation create-stack --stack-name $1  --template-body file://$2  #--capabilities CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND

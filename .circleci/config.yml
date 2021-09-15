@@ -2,16 +2,31 @@
 # Python CircleCI 2.0 configuration file
 #
 version: 2.1
+
+commands:
+  aws-alpine:
+    description: install aws-cli on alpine distros
+    steps:
+      - run:
+          name: install aws-cli
+          command: |
+            apk update 
+            apk add curl zip unzip
+            curl "https://s3.amazonaws.com/aws-cli/awscli-bundle.zip" -o "awscli-bundle.zip"
+            unzip awscli-bundle.zip
+            ./awscli-bundle/install -i /usr/local/aws -b /usr/local/bin/aws
+
+
 workflows:
   flask:
     jobs:
-      - build
-      - dockerize:
-          requires: [build]
-      #- provision
+      #- build
+      #- dockerize:
+      #    requires: [build]
+      - provision
       #   requires: [dockerize]
-      - update:
-         requires: [dockerize]
+      - update
+      #   requires: [dockerize]
       #- validate:
       #   requires: [update]
       #- cleanup:
@@ -20,8 +35,6 @@ workflows:
 jobs:
   build:
     docker:
-      # specify the version you desire here
-      # use `-browsers` prefix for selenium tests, e.g. `3.6.1-browsers`
       - image: python:3.7.3-stretch
 
     working_directory: /app
@@ -36,12 +49,7 @@ jobs:
             # Install hadolint
             wget -O /bin/hadolint https://github.com/hadolint/hadolint/releases/download/v1.16.3/hadolint-Linux-x86_64
             chmod +x /bin/hadolint
-#      - save_cache:
-#          paths:
-#            - ./venv
-#          key: v1-dependencies-{{ checksum "requirements.txt" }}
 
-      # run lints!
       - run:
           name: run lint
           command: |
@@ -62,22 +70,35 @@ jobs:
           docker build -t ${ecr}/flask:${CIRCLE_WORKFLOW_ID:0:6} .
           docker push ${ecr}/flask:${CIRCLE_WORKFLOW_ID:0:6}
 
+  provision:
+    docker:
+      - image: python:3.7-alpine3.11
+    steps:
+      - aws-alpine
+      - checkout
+      - run: 
+          name: create cluster
+          command: aws cloudformation deploy --template-file eks/cluster.yaml \
+                    --stack-name eks --tags version=${CIRCLE_WORKFLOW_ID} \
+                    --capabilities CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND
+
   update:
     docker:
-      - image: python:3.7.3-stretch
+      - image: python:3.7-alpine3.11
     environment:
-      kss: s3://capstone-cluster
-      cn: capstone-cluster.deyaa.online
+      #kss: s3://capstone-cluster
+      cn: capstone-cluster
     steps:
       - checkout
-      - run:
-          name: install kops
-          command: |
-            curl -LO https://github.com/kubernetes/kops/releases/download/$(curl -s https://api.github.com/repos/kubernetes/kops/releases/latest | grep tag_name | cut -d '"' -f 4)/kops-linux-amd64
-            chmod +x kops-linux-amd64
-            mv kops-linux-amd64 /usr/bin/kops
-            kops version
-            kops --state $kss export kubecfg $cn --admin
+      - aws-alpine
+      #- run:
+      #    name: install kops
+      #    command: |
+      #      curl -LO https://github.com/kubernetes/kops/releases/download/$(curl -s https://api.github.com/repos/kubernetes/kops/releases/latest | grep tag_name | cut -d '"' -f 4)/kops-linux-amd64
+      #      chmod +x kops-linux-amd64
+      #      mv kops-linux-amd64 /usr/bin/kops
+      #      kops version
+      #      kops --state $kss export kubecfg $cn --admin
       - run:
           name: install kubectl
           command: |
@@ -87,5 +108,13 @@ jobs:
             #export KUBECONFIG=~/.kube/config
             kubectl version 
       - run:
+          name: wait for cluster to be healthy
+          command: aws cloudformation wait stack-create-complete --stack-name eks
+
+      - run:
+          name: configure kubectl context
+          command: aws eks --region eu-west-2 update-kubeconfig --name $cn
+
+      - run:
           name: create new Deployment
-          command: kubectl set image deployment/flask-app flask=135834287615.dkr.ecr.eu-west-2.amazonaws.com/flask:${CIRCLE_WORKFLOW_ID:0:6}
+          command: kubectl --record set image deployment/flask-app flask=135834287615.dkr.ecr.eu-west-2.amazonaws.com/flask:daa0b8  #${CIRCLE_WORKFLOW_ID:0:6}

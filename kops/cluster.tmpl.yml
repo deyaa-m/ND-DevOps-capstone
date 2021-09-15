@@ -1,38 +1,61 @@
 apiVersion: kops.k8s.io/v1alpha2
 kind: Cluster
 metadata:
-  #labels:
   name: {{ .clusterName }}.{{ .dns }}
 spec:
   api:
     dns: {}
   authorization:
-    AlwaysAllow: {}
-  kubeDNS:
-    provider: CoreDNS
-  
-  channel: stable  
-  kubernetesVersion: 1.21.1
+    rbac: {}
+  channel: stable    
   cloudProvider: aws
-  configBase: s3://{{ .s3Bucket }}/${{ .clusterName }}
+  configBase: s3://{{ .s3Bucket }}
+  dnsZone: {{ .dns }}
+  kubernetesVersion: 1.21.1
+  etcdClusters:
+  - name: main
+    memoryRequest: 100Mi
+    cpuRequest: 200m
+    etcdMembers:
+    - encryptedVolume: true
+      instanceGroup: master-eu-west-2a
+      name: a
+    - encryptedVolume: true
+      instanceGroup: master-eu-west-2b
+      name: b
+    - encryptedVolume: true
+      instanceGroup: master-eu-west-2c
+      name: c
+  - cpuRequest: 100m
+    etcdMembers:
+    - encryptedVolume: true
+      instanceGroup: master-{{ .awsRegion }}a
+      name: a
+    - encryptedVolume: true
+      instanceGroup: master-eu-west-2b
+      name: b
+    - encryptedVolume: true
+      instanceGroup: master-eu-west-2c
+      name: c
+    memoryRequest: 100Mi
+    name: events
   iam:
     allowContainerRegistry: true
     legacy: false
   kubelet:
     anonymousAuth: false
-  #  authenticationTokenWebhook: true
-  #  authorizationMode: Webhook 
-  kubeAPIServer:
-    enableAggregatorRouting: true
-
   kubernetesApiAccess:
-  - 0.0.0.0/0   
-  ssh_public_key: ~/.ssh/ida_rsa.pub
+  - 0.0.0.0/0
+  #kubernetesVersion: 1.21.4
+  masterPublicName: api.{{ .clusterName }}.{{ .dns }}  
+  sshpublickey: ~/.ssh/ida_rsa.pub
   networkID: {{ .vpcID }}
   networkCIDR: 172.31.0.0/16
   networking:
-    weave: {}
+    kubenet: {}
   nonMasqueradeCIDR: 100.64.0.0/10
+  sshAccess:
+  - 0.0.0.0/0
   subnets:
   - name: {{.awsRegion}}a
     type: Public
@@ -46,14 +69,6 @@ spec:
     type: Public
     zone: {{.awsRegion}}c
     cidr: 172.31.80.0/20
-  etcdClusters:
-  - name: main
-    etcdMembers:
-    - instanceGroup: master-a
-      name: a
-  masterPublicName: api.{{ .clusterName }}.{{ .dns }}
-  sshAccess:
-  - 0.0.0.0/0  
   topology:
     dns:
       type: Public
@@ -66,16 +81,18 @@ kind: InstanceGroup
 metadata:
   labels:
     kops.k8s.io/cluster: {{ .clusterName }}.{{ .dns }}
-  name: master-a
+  name: master-{{ .awsRegion }}a
 spec:
   machineType: {{ .masterType }}
   maxSize: 2
   minSize: 1
   nodeLabels:
-    kops.k8s.io/instancegroup: master-a
+    kops.k8s.io/instancegroup: master-{{ .awsRegion }}a
   role: Master
   subnets:
   - {{.awsRegion}}a
+  #- {{.awsRegion}}b
+  #- {{.awsRegion}}c
 
 ---
 apiVersion: kops.k8s.io/v1alpha2
