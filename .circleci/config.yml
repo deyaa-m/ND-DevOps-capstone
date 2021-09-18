@@ -128,6 +128,8 @@ jobs:
               kubectl apply -f flask-k8s.yml
               kubectl set image deployment/flask-app flask=135834287615.dkr.ecr.eu-west-2.amazonaws.com/flask:${CIRCLE_WORKFLOW_ID:0:6} --record
             fi
+            sleep 5
+            kubectl get events
 
       - run:
           name: get service LoadBalancer
