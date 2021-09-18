@@ -130,7 +130,3 @@ jobs:
             fi
             sleep 5
             kubectl get events
-
-      - run:
-          name: get service LoadBalancer
-          command: kubectl get svc |  grep eu-west | cut -d " " -f 10
