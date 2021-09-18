@@ -46,7 +46,7 @@ Resources:
     Properties: 
       ClusterName: !Ref CN
       InstanceTypes: 
-        - t2.micro
+        - t2.medium
       NodegroupName: NG1
       NodeRole: !GetAtt NGRole.Arn
       Subnets: 
